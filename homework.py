@@ -1,7 +1,4 @@
 from dataclasses import dataclass
-# from hmac import trans_36
-# from operator import ge, length_hint
-# from turtle import distance
 
 
 @dataclass
@@ -25,7 +22,6 @@ class InfoMessage:
 
 class Training:
     """Базовый класс тренировки."""
-    type: str
     LEN_STEP: float = 0.65
     M_IN_KM: int = 1000
     action: int
@@ -51,7 +47,7 @@ class Training:
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
-        pass
+        raise NotImplementedError
 
     def show_training_info(self) -> InfoMessage:
         """Вернуть информационное сообщение о выполненной тренировке."""
@@ -66,27 +62,26 @@ class Training:
 
 class Running(Training):
     """Тренировка: бег."""
-    type: str = 'RUN'
     LEN_STEP: float = 0.65
-    coeff_calorie_run_1: int = 18
-    coeff_calorie_run_2: int = 20
+    CALORIE_CALC_COEFICENT_FOR_RUNNING_1: float = 18
+    CALORIE_CALC_COEFICENT_FOR_RUNNING_2: float = 20
 
     def get_spent_calories(self) -> float:
         return (
-            (self.coeff_calorie_run_1 * self.get_mean_speed()
-             - self.coeff_calorie_run_2)
+            (self.CALORIE_CALC_COEFICENT_FOR_RUNNING_1 * self.get_mean_speed()
+             - self.CALORIE_CALC_COEFICENT_FOR_RUNNING_2)
             * self.weight / self.M_IN_KM * (self.duration * 60)
         )
 
 
 class SportsWalking(Training):
     """Тренировка: спортивная ходьба."""
-    type: str = 'WLK'
     LEN_STEP: float = 0.65
     height: float
-    coeff_calorie_sport_walking_1: float = 0.035
-    coeff_calorie_sport_walking_2: float = 2
-    coeff_calorie_sport_walking_3: float = 0.029
+    CALORIE_CALC_COEFICENT_FOR_WALK_1: float = 0.035
+    CALORIE_CALC_COEFICENT_FOR_WALK_2: float = 2
+    CALORIE_CALC_COEFICENT_FOR_WALK_3: float = 0.029
+    CONVERT_TO_MINETS: float = 60
 
     def __init__(self,
                  action: int,
@@ -99,21 +94,21 @@ class SportsWalking(Training):
 
     def get_spent_calories(self) -> float:
         return (
-            (self.coeff_calorie_sport_walking_1 * self.weight
-             + (self.get_mean_speed()**2 // self.height)
-             * self.coeff_calorie_sport_walking_3 * self.weight)
-            * (self.duration * 60)
+            (self.CALORIE_CALC_COEFICENT_FOR_WALK_1 * self.weight
+             + (self.get_mean_speed()**self.CALORIE_CALC_COEFICENT_FOR_WALK_2
+             // self.height)
+             * self.CALORIE_CALC_COEFICENT_FOR_WALK_3 * self.weight)
+            * (self.duration * self.CONVERT_TO_MINETS)
         )
 
 
 class Swimming(Training):
     """Тренировка: плавание."""
-    type: str = 'SWM'
     LEN_STEP: float = 1.38
     length_pool: float
     count_pool: int
-    coeff_calorie_swiming_1: float = 1.1
-    coeff_calorie_swiming_2: float = 2
+    CALORIE_COUNTING_COEFFICIENT_FOR_SWIMMING_1: float = 1.1
+    CALORIE_COUNTING_COEFFICIENT_FOR_SWIMMING_2: float = 2
 
     def __init__(self, action: int,
                  duration: float,
@@ -133,8 +128,8 @@ class Swimming(Training):
 
     def get_spent_calories(self) -> float:
         return (
-            (self.get_mean_speed() + self.coeff_calorie_swiming_1)
-            * self.coeff_calorie_swiming_2 * self.weight
+            (self.get_mean_speed() + self.CALORIE_COUNTING_COEFFICIENT_FOR_SWIMMING_1)
+            * self.CALORIE_COUNTING_COEFFICIENT_FOR_SWIMMING_2 * self.weight
         )
 
 
