@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Type
 
 
 @dataclass
@@ -65,12 +66,22 @@ class Running(Training):
     LEN_STEP: float = 0.65
     CALORIE_CALC_COEFICENT_FOR_RUNNING_1: float = 18
     CALORIE_CALC_COEFICENT_FOR_RUNNING_2: float = 20
+    CONVERT_TO_MINETS: float = 60
+
+    def get_distance(self) -> float:
+        return super().get_distance()
+        raise NotImplementedError
+
+    def get_mean_speed(self) -> float:
+        return super().get_mean_speed()
+        raise NotImplementedError
 
     def get_spent_calories(self) -> float:
         return (
             (self.CALORIE_CALC_COEFICENT_FOR_RUNNING_1 * self.get_mean_speed()
              - self.CALORIE_CALC_COEFICENT_FOR_RUNNING_2)
-            * self.weight / self.M_IN_KM * (self.duration * 60)
+            * self.weight / self.M_IN_KM
+            * (self.duration * self.CONVERT_TO_MINETS)
         )
 
 
@@ -96,7 +107,7 @@ class SportsWalking(Training):
         return (
             (self.CALORIE_CALC_COEFICENT_FOR_WALK_1 * self.weight
              + (self.get_mean_speed()**self.CALORIE_CALC_COEFICENT_FOR_WALK_2
-             // self.height)
+                // self.height)
              * self.CALORIE_CALC_COEFICENT_FOR_WALK_3 * self.weight)
             * (self.duration * self.CONVERT_TO_MINETS)
         )
@@ -133,12 +144,19 @@ class Swimming(Training):
         )
 
 
-def read_package(workout_type: str, data: list) -> Training:
+def read_package(workout_type: str, data: list) -> Type[Training]:
     """Прочитать данные полученные от датчиков."""
+    
     training_type = {'RUN': Running,
                      'SWM': Swimming,
                      'WLK': SportsWalking}
-    return training_type[workout_type](*data)
+    keys = training_type.keys()
+    if workout_type in keys:
+        return training_type[workout_type](*data)
+    else:
+        raise KeyError(
+            f'Тренировки {workout_type} не существует'
+        )
 
 
 def main(training: Training) -> None:
