@@ -28,6 +28,7 @@ class Training:
     action: int
     duration: float
     weight: float
+    CONVERT_TO_MINUTES: float = 60
 
     def __init__(self,
                  action: int,
@@ -48,7 +49,9 @@ class Training:
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
-        raise NotImplementedError
+        raise NotImplementedError(
+            f'Ошибка в классе {type(self).__name__}'
+        )
 
     def show_training_info(self) -> InfoMessage:
         """Вернуть информационное сообщение о выполненной тренировке."""
@@ -63,36 +66,24 @@ class Training:
 
 class Running(Training):
     """Тренировка: бег."""
-    LEN_STEP: float = 0.65
     CALORIE_CALC_COEFICENT_FOR_RUNNING_1: float = 18
     CALORIE_CALC_COEFICENT_FOR_RUNNING_2: float = 20
-    CONVERT_TO_MINETS: float = 60
-
-    def get_distance(self) -> float:
-        return super().get_distance()
-        raise NotImplementedError
-
-    def get_mean_speed(self) -> float:
-        return super().get_mean_speed()
-        raise NotImplementedError
 
     def get_spent_calories(self) -> float:
         return (
             (self.CALORIE_CALC_COEFICENT_FOR_RUNNING_1 * self.get_mean_speed()
              - self.CALORIE_CALC_COEFICENT_FOR_RUNNING_2)
             * self.weight / self.M_IN_KM
-            * (self.duration * self.CONVERT_TO_MINETS)
+            * (self.duration * self.CONVERT_TO_MINUTES)
         )
 
 
 class SportsWalking(Training):
     """Тренировка: спортивная ходьба."""
-    LEN_STEP: float = 0.65
     height: float
     CALORIE_CALC_COEFICENT_FOR_WALK_1: float = 0.035
     CALORIE_CALC_COEFICENT_FOR_WALK_2: float = 2
     CALORIE_CALC_COEFICENT_FOR_WALK_3: float = 0.029
-    CONVERT_TO_MINETS: float = 60
 
     def __init__(self,
                  action: int,
@@ -109,7 +100,7 @@ class SportsWalking(Training):
              + (self.get_mean_speed()**self.CALORIE_CALC_COEFICENT_FOR_WALK_2
                 // self.height)
              * self.CALORIE_CALC_COEFICENT_FOR_WALK_3 * self.weight)
-            * (self.duration * self.CONVERT_TO_MINETS)
+            * (self.duration * self.CONVERT_TO_MINUTES)
         )
 
 
@@ -150,13 +141,11 @@ def read_package(workout_type: str, data: list) -> Type[Training]:
     training_type = {'RUN': Running,
                      'SWM': Swimming,
                      'WLK': SportsWalking}
-    keys = training_type.keys()
-    if workout_type in keys:
-        return training_type[workout_type](*data)
-    else:
+    if workout_type not in training_type:
         raise KeyError(
             f'Тренировки {workout_type} не существует'
         )
+    return training_type[workout_type](*data)
 
 
 def main(training: Training) -> None:
